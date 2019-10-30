@@ -23,7 +23,9 @@ class ViewController: UIViewController {
 
     private var altitude: Float = 0 {
         didSet {
-            altitudeValueLabel.text = "\(altitude) ft"
+
+            let roundAltitude = altitude.rounded()
+            altitudeValueLabel.text = String(format: "%.0f ft", roundAltitude)
         }
     }
     private var speed: Double = 0 {
@@ -31,6 +33,8 @@ class ViewController: UIViewController {
             speedValueLabel.text = "\(speed) kts"
         }
     }
+
+    let manager = FlightManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,6 +46,17 @@ class ViewController: UIViewController {
     private func configureUI() {
         altitudeSlider.value = altitude
         speedStepper.value = speed
+
+        configureSegmentedControl()
+    }
+
+    private func configureSegmentedControl() {
+        let engineTypes = Plane.EngineType.allCases
+        engineTypeSegmentedControl.removeAllSegments()
+        for type in engineTypes {
+            engineTypeSegmentedControl.insertSegment(withTitle: type.title, at: engineTypeSegmentedControl.numberOfSegments, animated: false)
+        }
+        engineTypeSegmentedControl.selectedSegmentIndex = 0
     }
 
     @IBAction func altitudeChanged(_ sender: UISlider) {
@@ -53,6 +68,19 @@ class ViewController: UIViewController {
     }
 
     @IBAction func save(_ sender: UIButton) {
+
+        guard altitude >= 0 else { return }
+        guard speed >= 0 else { return }
+
+        guard let type = Plane.EngineType(rawValue: engineTypeSegmentedControl.selectedSegmentIndex) else { return }
+        guard let registration = registrationTextField.text, registration.count > 2 else { return }
+        guard let company = companyTextField.text, company.count > 2 else { return }
+
+        let plane = Plane(registrationNumber: registration, companyName: company, buildDate: buildDatePicker.date, engine: type, flyingHours: 0, altitude: Int(altitude), speed: Int(speed), hasValidFlightAllowance: allowedToFlySwitch.isOn)
+
+        manager.add(plane)
+
+        print(manager.allPlanes)
     }
 
 }

@@ -10,9 +10,20 @@ import Foundation
 
 struct Plane: Equatable, Flying {
 
-    enum EngineType {
+    // Enum with rawValue and protocol
+    enum EngineType: Int, CaseIterable {
         case jet
         case turboProp
+
+        var title: String {
+            //Break is implicit
+            switch self {
+            case .jet:
+                return "Jet"
+            case .turboProp:
+                return "TurboProp"
+            }
+        }
     }
 
     let registrationNumber: String
